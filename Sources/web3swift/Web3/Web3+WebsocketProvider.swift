@@ -153,7 +153,7 @@ public class WebsocketProvider: Web3Provider, IWebsocketProvider, WebSocketDeleg
         url = URL(string: endpointString)!
         delegate = wsdelegate
         attachedKeystoreManager = manager
-        socket = WebSocket(url: url)
+        socket = WebSocket(request: URLRequest(url: url))
         socket.delegate = self
     }
     
@@ -194,7 +194,7 @@ public class WebsocketProvider: Web3Provider, IWebsocketProvider, WebSocketDeleg
         url = URL(string: finalEndpoint)!
         delegate = wsdelegate
         attachedKeystoreManager = manager
-        socket = WebSocket(url: url)
+        socket = WebSocket(request: URLRequest(url: url))
         socket.delegate = self
     }
     
@@ -271,6 +271,32 @@ public class WebsocketProvider: Web3Provider, IWebsocketProvider, WebSocketDeleg
             for d in messagesDataToWrite {
                 socket.write(data: d)
             }
+        }
+    }
+    
+    // MARK: - WebSocketDelegate
+    public func didReceive(event: WebSocketEvent, client: WebSocket) {
+        switch event {
+        case .connected(_):
+            websocketDidConnect(socket: client)
+        case .disconnected(_, _):
+            websocketDidDisconnect(socket: client, error: nil)
+        case .text(let text):
+            websocketDidReceiveMessage(socket: client, text: text)
+        case .binary(let data):
+            websocketDidReceiveData(socket: client, data: data)
+        case .pong(_):
+            break
+        case .ping(_):
+            break
+        case .error(_):
+            break
+        case .viabilityChanged(_):
+            break
+        case .reconnectSuggested(_):
+            break
+        case .cancelled:
+            break
         }
     }
     
